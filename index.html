@@ -1,39 +1,90 @@
 <!DOCTYPE html>
 <html lang="ja">
   <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-　　<!-- vue.js　-->
-    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
-    <link rel="manifest" href="manifest.json">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="manifest" href="manifest.json" />
     <title>PWA Sample</title>
   </head>
   <body>
-    <div id="app">
-        <p>{{ message }}</p>
-        <button v-on:click="reverseMessage">Reverse Message</button>
-     </div>
-    <script>
-    // service workerの登録関係
-    if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service_worker.js').then(function(registration) {
-        console.log('ServiceWorker registration successful with scope: ', registration.scope);
-    }).catch(function(err) {
-        console.log('ServiceWorker registration failed: ', err);
-    });
-    }
-    // vue.jsの設定関係
-    var app = new Vue({
-      el: '#app',
-      data: {
-        message: 'Hello Vue!'
-      },
-      methods: {
-        reverseMessage: function () {
-          this.message = this.message.split('').reverse().join('')
-        }
-      }
-    });
-    </script>
+    <div id="app"></div>
+    <button id="button">配達開始</button>
   </body>
+
+  <script>
+    // service workerの登録関係
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker
+        .register("service_worker.js")
+        .then(function (registration) {
+          console.log(
+            "ServiceWorker registration successful with scope: ",
+            registration.scope
+          );
+          createDB();
+        })
+        .catch(function (err) {
+          console.log("ServiceWorker registration failed: ", err);
+        });
+      navigator.serviceWorker.ready
+        .then((registration) => {
+          document.getElementById("button").addEventListener(
+            "click",
+            () => {
+              insertData();
+              // 保存が終わったら、↓を呼ぶ
+              registration.sync
+                .register("sync-test")
+                .then(() => {
+                  console.log("sync registerd");
+                })
+                .catch(console.error.bind(console));
+            },
+            false
+          );
+        })
+        .catch(console.error.bind(console));
+    }
+    const dbName = "sample";
+    const storeName = "sample_store";
+    const keyValue = "key";
+    function createDB() {
+      var openReq = indexedDB.open(dbName);
+
+      openReq.onupgradeneeded = function (event) {
+        //onupgradeneededは、DBのバージョン更新(DBの新規作成も含む)時のみ実行
+        console.log("db upgrade");
+        var db = event.target.result;
+        db.createObjectStore(storeName, { keyPath: "id" });
+      };
+    }
+    function insertData() {
+      var openReq = indexedDB.open(dbName);
+
+      openReq.onsuccess = function (event) {
+        //onupgradeneededの後に実行。更新がない場合はこれだけ実行
+        var data = { id: "key", name: "value" };
+        console.log("db open success");
+        var db = event.target.result;
+        var trans = db.transaction(storeName, "readwrite");
+        var store = trans.objectStore(storeName);
+        var putReq = store.put(data);
+
+        putReq.onsuccess = function () {
+          console.log("put data success");
+        };
+
+        trans.oncomplete = function () {
+          // トランザクション完了時(putReq.onsuccessの後)に実行
+          console.log("transaction complete");
+        };
+        // 接続を解除する
+        db.close();
+      };
+      openReq.onerror = function (event) {
+        // 接続に失敗
+        console.log("db open error");
+      };
+    }
+  </script>
 </html>
