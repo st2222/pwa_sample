@@ -44,7 +44,7 @@ function fetchData() {
 
     getReq.onsuccess = function (event) {
       result = event.target.result;
-      alert(event.target.result);
+      console.log(event.target.result);
       return result;
     };
   };
