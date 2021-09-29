@@ -1,6 +1,6 @@
 // キャッシュファイルの指定
 var CACHE_NAME = "pwa-sample-caches";
-var urlsToCache = ["./"];
+var urlsToCache = ["./index.html", "./service_worker.js", "./db.js", "./manifest.json"];
 
 // インストール処理
 self.addEventListener("install", function (event) {
