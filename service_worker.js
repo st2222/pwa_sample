@@ -22,11 +22,11 @@ self.addEventListener("fetch", function (event) {
 });
 
 self.addEventListener("sync", (event) => {
-  console.info("sync", event);
+  // console.info("sync", event);
 
   // ここでIndexedDBからデータを取得して、サーバに送信する
   result = fetchData();
-  console.log("request data " + result);
+  // console.log("request data " + result);
 });
 
 const dbName = "sample";
