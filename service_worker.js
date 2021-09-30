@@ -1,6 +1,6 @@
 // キャッシュファイルの指定
 var CACHE_NAME = "pwa-sample-caches";
-var urlsToCache = ["./index.html", "./service_worker.js", "./db.js", "./manifest.json", "./test.html"];
+var urlsToCache = ["./index.html", "./service_worker.js", "./db.js", "./manifest.json"];
 
 // インストール処理
 self.addEventListener("install", function (event) {
@@ -49,7 +49,7 @@ self.addEventListener("fetch", (event) => {
         return response;
       }
 
-      // 重要：リクエストを clone する。リクエストは Stream なので
+      // リクエストを clone する。リクエストは Stream なので
       // 一度しか処理できない。ここではキャッシュ用、fetch 用と2回
       // 必要なので、リクエストは clone しないといけない
       let fetchRequest = event.request.clone();
@@ -59,9 +59,6 @@ self.addEventListener("fetch", (event) => {
           return response;
         }
 
-        // 重要：レスポンスを clone する。レスポンスは Stream で
-        // ブラウザ用とキャッシュ用の2回必要。なので clone して
-        // 2つの Stream があるようにする
         let responseToCache = response.clone();
 
         caches.open(CACHE_NAME).then((cache) => {
